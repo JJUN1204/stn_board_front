@@ -672,6 +672,15 @@ body {
   vertical-align: middle;
 }
 
+/* 텍스트 라벨 */
+.txt_label {
+  padding:2px 4px;
+  font-size: 11px;
+  color: #fff;
+}
+.txt_label.notice {
+  background:#ff7300;
+}
 
 /* paging & button */
 .comm_paging_btn {

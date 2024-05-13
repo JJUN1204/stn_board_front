@@ -11,7 +11,7 @@ function App() {
     <Routes>
       <Route path="/" element={<BoardList />} />
       <Route path="/boardwrite" element={<BoardWrite />} />
-      <Route path="/boardview" element={<BoardView />} />
+      <Route path="/boardview/:boardIdx" element={<BoardView />} />
       <Route path="/boardEdit" element={<BoardEdit />} />
     </Routes>
   );

@@ -1,8 +1,46 @@
 import '../css/common.css'  
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function BoardView() {
+
+    const { boardIdx } = useParams();
+    const [boardViewData, setBoardViewData] = useState([]);
+
+    useEffect(() => {
+        console.log(boardViewData);
+    }, [boardViewData]);
+
+    useEffect(() => {
+        getBoardIdx();
+    }, []);
+    
+   
+
+   
+
+    // const [title, setTitle] = useState('');
+    // const [writerId, setWriterId] = useState('');
+    // const [pwd, setPwd] = useState('');
+    // const [email, setEmail] = useState('');
+    // const [content, setContent] = useState('');
+    // const [files, setFiles] = useState([]);
+
+    const getBoardIdx = async () => {
+
+        try {
+            const response = await axios.get(`http://localhost:8081/getBoardIdx?idx=${boardIdx}`);
+            setBoardViewData(response.data);
+        } catch (e) {
+            console.log(e);
+        }
+
+    };
+
+
+
+
     return (
 
         <><div id="WrapTitle">
@@ -17,20 +55,20 @@ function BoardView() {
                     <div className="wrap_view">
                         <dl className="view_tit">
                             <dt>제목</dt>
-                            <dd><h3 className="tit">자유게시판 제목입니다. 제목이 길어서 한 줄 이상이 되면 줄 바꿈 처리해서 전부 볼 수 있게 해주세요 테스트 테스트 테스트</h3> </dd>
+                            <dd><h3 className="tit">{boardViewData.title}</h3> </dd>
                         </dl>
                         <dl className="view_info">
                             <dt>작성자</dt>
-                            <dd>홍길동</dd>
+                            <dd>{boardViewData.writerId}</dd>
                             <dt>이메일</dt>
-                            <dd><a href="javascript:;">SSTTN@stninfothec.com</a></dd>
+                            <dd><a href="javascript:;">{boardViewData.email}</a></dd>
                             <dt>작성일</dt>
-                            <dd>2024-04-19</dd>
+                            <dd>{boardViewData.createAt}</dd>
                             <dt>조회수</dt>
                             <dd>30</dd>
                         </dl>
                         <div className="view_cont">
-                            당사는 지속 가능한 ESG 경영 실천과 비용 효율성을 위하여 기존의 업무용 전자기기 교체 규정… (본문내용 중략..)
+                            {boardViewData.content}
                         </div>
                         <div className="view_file">
                             <strong className="tit_file"><span className="ico_img flie">첨부파일</span> 첨부파일</strong>

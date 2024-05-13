@@ -9,7 +9,8 @@ function BoardList() {
         getAllBoard();
     }, []);
 
-
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageNumber, setPageNumber] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [boardData, setBoardData] = useState([]);
 
@@ -22,11 +23,13 @@ function BoardList() {
     }
 
     const getAllBoard = async () => {
+        console.log(currentPage);
 
         try {
-            const response = await axios.get('http://localhost:8081/getAllBoard');
+            const response = await axios.get(`http://localhost:8081/getAllBoard?currentPage=${currentPage}`);
             console.log(response.data);
-            setBoardData(response.data);
+            setBoardData(response.data.data);
+            setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
         } catch (e) {
             console.log(e);
         }
@@ -91,7 +94,7 @@ function BoardList() {
                                     <td>{item.idx}</td>
                                     <td className="ta_l">
                                         <a className="link_title" href="javascript:;">
-                                            {item.title}
+                                            <Link to={`/boardView/${item.idx}`}>{item.title}</Link>
                                         </a>
                                         <span className="txt_reply">(2)</span>{" "}
                                         <span className="ico_new">N</span>{" "}
@@ -111,26 +114,31 @@ function BoardList() {
                         <div className="flo_side left">페이지 <strong className="fc_p">3</strong>/20</div>
 
                         <div className="wr_paging">
-                            <button className="btn_page first" disabled="disabled">
-                                첫 페이지
-                            </button>
-                            <button className="btn_page prev" disabled="disabled">
-                                이전
-                            </button>
-                            <span className="wr_page">
-                                <span className="page">1</span>
-                                <span className="page">2</span>
-                                <strong className="page on">3</strong>
-                                <span className="page">4</span>
-                                <span className="page">5</span>
-                                <span className="page">6</span>
-                                <span className="page">7</span>
-                                <span className="page">8</span>
-                                <span className="page">9</span>
-                                <span className="page">10</span>
-                            </span>
-                            <button className="btn_page next">다음</button>
-                            <button className="btn_page last">마지막 페이지</button>
+                            {currentPage === 1 || pageNumber.length === 0 ?
+                                <button className="btn_page first" disabled={"disabled"}>
+                                    첫 페이지
+                                </button>
+                                :
+                                <button className="btn_page prev" onClick={() => setCurrentPage(currentPage - 1)} disabled={"disabled"}>
+                                    이전
+                                </button>
+                            }
+                            {pageNumber.map((item, index) => (
+                                <span className="wr_page" key={index}>
+                                    {currentPage === item ? (
+                                        <span className="page">{item}</span>
+                                    ) : (
+                                        <strong className="page on" onClick={() => setCurrentPage(item)}>{item}</strong>
+                                    )}
+                                </span>
+                            ))}
+                            {currentPage === pageNumber.length || pageNumber.length === 0 ?
+                                <button className="btn_page next" onClick={() => setCurrentPage(currentPage + 1)}>다음</button>
+                                :
+                                <button className="btn_page last" disabled={"disabled"}>
+                                    마지막 페이지
+                                </button>
+                            }
                         </div>
 
                         <div className="flo_side right">

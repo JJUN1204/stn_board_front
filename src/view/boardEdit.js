@@ -46,6 +46,7 @@ function BoardEdit() {
 
     useEffect(() => {
        getBoardIdx();
+       console.log()
     }, []);
 
     const [input, setInput] = useState({
@@ -76,7 +77,7 @@ function BoardEdit() {
                 content: response.data.content,
                 createAt: response.data.createAt
               });
-
+              console.log(response.data);
         } catch (e) {
             console.log(e);
         }
@@ -171,10 +172,10 @@ function BoardEdit() {
 
                   <div className="comm_paging_btn">
                       <div className="flo_side left">
-                          <button className="comm_btn_round fill">목록</button>
+                          <button className="comm_btn_round fill"><Link to='/'>목록</Link></button>
                       </div>
                       <div className="flo_side right">
-                          <button className="comm_btn_round">취소</button>
+                          <button className="comm_btn_round"><Link to='/'>취소</Link></button>
                           <button className="comm_btn_round fill">수정</button>
                       </div>
                   </div>

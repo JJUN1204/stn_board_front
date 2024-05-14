@@ -175,7 +175,6 @@ function BoardWrite() {
                                 value={content || ""}
                                 sanitize={false}
                                 onChange={(content, delta, source, editor) => setContent(editor.getHTML())}
-                                    
                             />
                         </div>
                         <div className="write_file">

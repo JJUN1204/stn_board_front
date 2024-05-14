@@ -12,7 +12,7 @@ function App() {
       <Route path="/" element={<BoardList />} />
       <Route path="/boardwrite" element={<BoardWrite />} />
       <Route path="/boardview/:boardIdx" element={<BoardView />} />
-      <Route path="/boardEdit" element={<BoardEdit />} />
+      <Route path="/boardview/:boardIdx/boardEdit" element={<BoardEdit />} />
     </Routes>
   );
 }

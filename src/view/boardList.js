@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import '../css/common.css'
 
 function BoardList() {
 
     useEffect(() => {
         getAllBoard();
+        getBoardCount();
+        getBoardEmail();
     }, []);
 
+    
+    const [idx, setIdx] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageNumber, setPageNumber] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [boardCount, setBoardCount] = useState();
+    const [boardEmail, setBoardEmail] = useState('');
     const [boardData, setBoardData] = useState([]);
-
     const openModal = () => {
         setIsOpen(true);
     }
@@ -30,11 +35,38 @@ function BoardList() {
             console.log(response.data);
             setBoardData(response.data.data);
             setPageNumber(Array.from({ length: Math.ceil(response.data.totalData / 5) }, (_, index) => index + 1));
+            console.log(pageNumber);
         } catch (e) {
             console.log(e);
         }
 
     };
+
+    const getBoardCount = async () => {
+
+        try {
+            const response = await axios.get(`http://localhost:8081/getBoardCount`);
+            console.log(response.data);
+            setBoardCount(response.data);
+        } catch (e) {
+            console.log(e);
+        }
+
+    };
+
+    const getBoardEmail = async () => {
+    
+
+        try {
+            const response = await axios.get(`http://localhost:8081/getEmail?idx=${idx}`);
+            console.log(response.data);
+            setBoardEmail(response.data);
+        } catch (e) {
+            console.log(e);
+        }
+
+    };
+
 
     return (
 
@@ -47,7 +79,7 @@ function BoardList() {
                     <div className="wrap_tit">
                         <h2 className="tit_cont">자유게시판</h2>
                         <div className="ta_r">
-                            총 갯수 <strong className="fc_p">200</strong>건{" "}
+                            총 갯수 <strong className="fc_p">{boardCount}</strong>건{" "}
                         </div>
                     </div>
 
@@ -84,7 +116,7 @@ function BoardList() {
                                     </a>
                                 </td>
                                 <td>
-                                    <a className="link_writer" href="javascript:;">홍길동</a>
+                                    <button className="link_writer" onClick={openModal}>홍길동</button>
                                 </td>
                                 <td>2024-04-15</td>
                                 <td>358</td>
@@ -101,7 +133,7 @@ function BoardList() {
                                     </td>
                                     <td> </td>
                                     <td>
-                                        <a className="link_writer" href="javacript:;">{item.writerId}</a>
+                                        <button className="link_writer" onClick={openModal}>{item.writerId}</button>
                                     </td>
                                     <td>{item.createAt.slice(0, 10)}</td>
                                     <td>5</td>
@@ -111,7 +143,7 @@ function BoardList() {
                     </table>
 
                     <div className="comm_paging_btn">
-                        <div className="flo_side left">페이지 <strong className="fc_p">3</strong>/20</div>
+                        <div className="flo_side left">페이지 <strong className="fc_p">{currentPage}</strong>/{pageNumber}</div>
 
                         <div className="wr_paging">
                             {currentPage === 1 || pageNumber.length === 0 ?
@@ -212,77 +244,73 @@ function BoardList() {
               </div>
               <div className="wrap_bottom">
                   <button className="comm_btn_round">닫기</button>
-              </div> */}
-            {/* </div><div className="comm_popup" style={{ width: "400px", left: "73%" }}>
-              <form>
-                  <fieldset className="blind">이메일 보내기</fieldset>
-                  <div className="wrap_tit">
-                      <span className="tit_pop">이메일 보내기</span>
-                      <button type="button" className="btn_close" onClick="">
-                          닫기
-                      </button>
-                  </div>
-                  <div className="wrap_cont">
-                      <table className="tbl_pop">
-                          <tr>
-                              <th>보내는 사람</th>
-                              <td>
-                                  <input type="text" className="comm_inp_text" style={{ width: "100%" }} />
-                              </td>
-                          </tr>
-                          <tr>
-                              <th>받는 사람</th>
-                              <td>
-                                  <input type="text" className="comm_inp_text" value="SSTTN@stninfothec.com" style={{ width: "100%" }} />
-                              </td>
-                          </tr>
-                          <tr>
-                              <th>제목</th>
-                              <td>
-                                  <input type="text" className="comm_inp_text" style={{ width: "100%" }} />
-                              </td>
-                          </tr>
-                          <tr>
-                              <th>내용</th>
-                              <td>
-                                  <textarea className="comm_textarea" style={{ width: "100%" }} />
-                              </td>
-                          </tr>
-                          <tr>
-                              <th>파일</th>
-                              <td>
-                                  <input type="file" className="comm_inp_file" style={{ width: "100%" }} />
-                                  <ul className="list_file_inline mt_5">
-                                      <li>
-                                          file_20240425.zip <button className="btn_ico_del">삭제</button>
-                                      </li>
-                                      <li>
-                                          file_파일명이 길 경우_파일명이 길 경우_파일명이 길 경우_20240425.png{" "}
-                                          <button className="btn_ico_del">삭제</button>
-                                      </li>
-                                      <li>
-                                          file_2.pdf <button className="btn_ico_del">삭제</button>
-                                      </li>
-                                      <li>
-                                          file_3.jpg <button className="btn_ico_del">삭제</button>
-                                      </li>
-                                      <li>
-                                          file_20240425.zip <button className="btn_ico_del">삭제</button>
-                                      </li>
-                                      <li>
-                                          file_20240425.png <button className="btn_ico_del">삭제</button>
-                                      </li>
-                                  </ul>
-                              </td>
-                          </tr>
-                      </table>
-                  </div>
-                  <div className="wrap_bottom">
-                      <button className="comm_btn_round">닫기</button>
-                      <button className="comm_btn_round fill">보내기</button>
-                  </div>
-              </form>
-          </div> */}
+              </div> 
+             </div>*/}
+            {
+                isOpen &&
+
+                <div className="comm_popup" style={{ width: "400px", left: "73%" }}>
+                    <form>
+                        <fieldset className="blind">이메일 보내기</fieldset>
+                        <div className="wrap_tit">
+                            <span className="tit_pop">이메일 보내기</span>
+                            <button type="button" className="btn_close" onClick={closeModal}>
+                                닫기
+                            </button>
+                        </div>
+                        <div className="wrap_cont">
+                            <table className="tbl_pop">
+                                <tr>
+                                    <th>보내는 사람</th>
+                                    <td>
+                                        <input type="text" className="comm_inp_text" style={{ width: "100%" }} onChange={null}/>
+                                    </td>
+                                </tr>
+                                <tr>    
+                                    <th>받는 사람</th>
+                                    <td>
+                                        <input type="text" className="comm_inp_text" value={boardEmail} style={{ width: "100%" }} onChange={null}/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>제목</th>
+                                    <td>
+                                        <input type="text" className="comm_inp_text" style={{ width: "100%" }} onChange={null}/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>내용</th>
+                                    <td>
+                                        <textarea className="comm_textarea" style={{ width: "100%" }} onChange={null}/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>파일</th>
+                                    <td>
+                                        <input type="file" className="comm_inp_file" style={{ width: "100%" }} onChange={null}/>
+                                        <ul className="list_file_inline mt_5">
+                                            <li>
+                                                file_20240425.zip <button className="btn_ico_del">삭제</button>
+                                            </li>
+
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div className="wrap_bottom">
+                            <button className="comm_btn_round" onClick={closeModal}>닫기</button>
+                            <button className="comm_btn_round fill">보내기</button>
+                        </div>
+                    </form>
+                </div>
+
+
+
+
+
+            }
+
         </>
     );
 }

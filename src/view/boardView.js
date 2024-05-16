@@ -13,14 +13,10 @@ function BoardView() {
     const navigate = useNavigate();
     const parse = require('html-react-parser').default;
 
-    useEffect(() => {
-        console.log(boardViewData);
-    }, [boardViewData]);
 
     useEffect(() => {
         getBoardIdx();
-        console.log(passWord);
-    }, []);
+    }, [boardIdx]);
 
     const [createAt, setCreateAt] = useState('');
     const [passWord, setPassWord] = useState('');
@@ -39,8 +35,8 @@ function BoardView() {
         try {
             const response = await axios.get(`http://localhost:8081/getBoardIdx?idx=${boardIdx}`);
             setBoardViewData(response.data);
-            setCreateAt(boardViewData.createAt);
-            console.log(boardViewData.pwd);
+            //setCreateAt(boardViewData.createAt);
+            console.log(response.data);
 
         } catch (e) {
             console.log(e);
@@ -49,7 +45,6 @@ function BoardView() {
     };
 
     const passWordTest = async () => {
-        console.log(passWord);
         console.log(boardViewData.pwd);
 
         if(passWord === boardViewData.pwd){

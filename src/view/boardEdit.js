@@ -1,5 +1,5 @@
 import '../css/common.css'
-import { Link, useParams,useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ReactQuill from "react-quill";
@@ -18,7 +18,6 @@ function BoardEdit() {
     });
 
     const navigate = useNavigate();
-
     const { boardIdx } = useParams();
 
     const modules = {
@@ -55,17 +54,14 @@ function BoardEdit() {
     ];
 
     useEffect(() => {
-        
-
         fetchData();
-    }, [boardIdx]); //boardIdx의 값이 변경될때 마다 새로운 데이터 받아오기
-
+    }, [boardIdx]); // boardIdx의 값이 변경될 때마다 새로운 데이터 받아오기
 
     const fetchData = async () => {
         try {
             const response = await axios.get(`http://localhost:8081/getBoardIdx?idx=${boardIdx}`);
             setInput({
-                idx : response.data.idx,
+                idx: response.data.idx,
                 title: response.data.title,
                 writerId: response.data.writerId,
                 pwd: response.data.pwd,
@@ -75,69 +71,38 @@ function BoardEdit() {
                 content: response.data.content,
                 createAt: response.data.createAt
             });
-
-            console.log(response.data.isAlert);
         } catch (error) {
             console.log(error);
         }
     };
 
-
-
     const handleAlertChange = () => {
-
         setInput(prevState => ({
             ...prevState,
-            isAlert: prevState.isAlert === 1 ? 0 : 1
+            isAlert: prevState.isAlert === 1 ? 0 : 1,
+            isPrivate: prevState.isAlert === 1 ? prevState.isPrivate : 0
         }));
     };
+    
 
     const handlePrivateChange = () => {
         setInput(prevState => ({
             ...prevState,
-            isPrivate: prevState.isPrivate === 1 ? 0 : 1
+            isPrivate: prevState.isPrivate === 1 ? 0 : 1,
+            isAlert: prevState.isPrivate === 1 ? prevState.isAlert : 0
         }));
     };
+    
 
     const boardUpdate = async () => {
-        console.log(
-            {
-                idx : input.idx,
-                title: input.title,
-                writerId: input.writerId,
-                pwd: input.pwd,
-                email: input.email,
-                isPrivate: input.isPrivate,
-                isAlert: input.isAlert,
-                content: input.content,
-                createAt: input.createAt
-
-            }
-        );
-
-
-
         try {
-            const response = await axios.put(`http://localhost:8081/updateBoard`,
-                {
-                    title: input.title,
-                    writerId: input.writerId,
-                    pwd: input.pwd,
-                    email: input.email,
-                    isPrivate: input.isPrivate,
-                    isAlert: input.isAlert,
-                    content: input.content,
-                    createAt: input.createAt
-                }
-            );
-
+            const response = await axios.put(`http://localhost:8081/updateBoard`, input);
             if (response.data.result === "UPDATE_COMPLETE") {
-                navigate(`/boardview/${boardIdx}`); 
+                navigate(`/boardview/${boardIdx}`);
             }
         } catch (e) {
             console.log(e);
         }
-
     };
 
     return (
@@ -155,7 +120,7 @@ function BoardEdit() {
                     <div className="wrap_write">
                         <dl className="write_tit">
                             <dt>제목</dt>
-                            <dd><input type="text" className="comm_inp_text" style={{ width: "100%" }} value={input.title} readOnly /></dd>
+                            <dd><input type="text" className="comm_inp_text" style={{ width: "100%" }} value={input.title} onChange={(e) => setInput({ ...input, title: e.target.value })} /></dd>
                         </dl>
                         <div className="write_info">
                             <dl className="info">
@@ -166,25 +131,21 @@ function BoardEdit() {
                                 <dt>이메일</dt>
                                 <dd><input type="text" className="comm_inp_text" style={{ width: "150px" }} value={input.email} readOnly /></dd>
                             </dl>
-
                             <dl className="side">
-                                {
-                                    input.isPrivate === 0 &&
-                                    <>
-                                        <dt>공지사항</dt>
-                                        <dd><label className="comm_swich"><input type="checkbox" name='isAlert' value={input.isAlert} checked={input.isAlert === 1} onChange={handleAlertChange} /><span className="ico_txt"></span></label></dd>
-                                    </>
-                                }
-                                {
-                                    input.isPrivate === 1 &&
-                                    <>
-                                        <dt>공지사항</dt>
-                                        <dd><label className="comm_swich"><input type="checkbox" name='isAlert' value={input.isAlert} checked={input.isAlert === 1} onChange={handleAlertChange} disabled /><span className="ico_txt"></span></label></dd>
-                                    </>
-                                }
-
+                                <dt>공지사항</dt>
+                                <dd>
+                                    <label className="comm_swich">
+                                        <input type="checkbox" name='isAlert' checked={input.isAlert === 1} onChange={handleAlertChange} disabled={input.isPrivate === 1} />
+                                        <span className="ico_txt"></span>
+                                    </label>
+                                </dd>
                                 <dt>비밀글</dt>
-                                <dd><label className="comm_swich"><input type="checkbox" name='isPrivate' value={input.isPrivate} checked={input.isPrivate === 1} onChange={handlePrivateChange} /><span className="ico_txt"></span></label></dd>
+                                <dd>
+                                    <label className="comm_swich">
+                                        <input type="checkbox" name='isPrivate' checked={input.isPrivate === 1} onChange={handlePrivateChange} disabled={input.isAlert === 1}/>
+                                        <span className="ico_txt"></span>
+                                    </label>
+                                </dd>
                             </dl>
                         </div>
                         <div className="write_cont">
@@ -194,12 +155,11 @@ function BoardEdit() {
                                 modules={modules}
                                 formats={formats}
                                 value={input.content || ""}
-                                sanitize={false}
                                 onChange={(content, delta, source, editor) => setInput(prevState => ({ ...prevState, content: editor.getHTML() }))}
                             />
                         </div>
                         <div className="write_file">
-                            <strong className="tit_file"><span className="ico_img flie">첨부파일</span> 첨부파일</strong>
+                            <strong className="tit_file"><span className="ico_img file">첨부파일</span> 첨부파일</strong>
                             <div className="cont_file">
                                 <input type="file" className="comm_inp_file" style={{ width: "100%" }} />
                                 <ul className="list_file_inline mt_5">
@@ -208,17 +168,15 @@ function BoardEdit() {
                             </div>
                         </div>
                     </div>
-
                     <div className="comm_paging_btn">
                         <div className="flo_side left">
                             <button className="comm_btn_round fill"><Link to='/'>목록</Link></button>
                         </div>
                         <div className="flo_side right">
-                            <button className="comm_btn_round"><Link to='/'>취소</Link></button>
+                            <button className="comm_btn_round"><Link to={`/boardview/${boardIdx}`}>취소</Link></button>
                             <button className="comm_btn_round fill" onClick={boardUpdate}>수정</button>
                         </div>
                     </div>
-
                 </div>
             </div>
         </>

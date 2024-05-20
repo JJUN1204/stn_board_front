@@ -8,6 +8,7 @@ function BoardView() {
     const { boardIdx } = useParams();
     const [boardViewData, setBoardViewData] = useState({});
     const [isOpen, setIsOpen] = useState(false);
+    const [modalAction, setModalAction] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -16,12 +17,14 @@ function BoardView() {
 
     const [passWord, setPassWord] = useState('');
 
-    const openModal = () => {
+    const openModal = (action) => {
+        setModalAction(action);
         setIsOpen(true);
     }
 
     const closeModal = () => {
         setIsOpen(false);
+        setPassWord('');
     }
 
     const getBoardIdx = async () => {
@@ -34,11 +37,26 @@ function BoardView() {
     };
 
     const passWordTest = async () => {
-        if (passWord === boardViewData.pwd) {
-            navigate(`/boardview/${boardIdx}/boardEdit`);
-        } else {
+        console.log(modalAction);
+
+
+        if (passWord !== boardViewData.pwd) {
             alert("비밀번호가 일치하지 않습니다.");
             setPassWord('');
+            return;
+        }
+
+        if (modalAction === 'update') {
+            navigate(`/boardview/${boardIdx}/boardEdit`);
+        } else if (modalAction === 'delete') {
+            try {
+                const response = await axios.delete(`http://localhost:8081/deleteBoard?idx=${boardIdx}`);
+                if (response.data.result === "DELETE_COMPLETE") {
+                    navigate('/');
+                }
+            } catch (e) {
+                console.log(e);
+            }
         }
     };
 
@@ -118,11 +136,11 @@ function BoardView() {
                     <div className="comm_paging_btn">
                         <div className="flo_side left">
                             <button className="comm_btn_round fill"><Link to='/'>목록</Link></button>
-                            <button className="comm_btn_round">삭제</button>
+                            <button className="comm_btn_round" onClick={() => openModal('delete')}>삭제</button>
                         </div>
                         <div className="flo_side right">
                             <button className="comm_btn_round fill">답글</button>
-                            <button className="comm_btn_round fill" onClick={openModal}>수정</button>
+                            <button className="comm_btn_round fill" onClick={() => openModal('update')}>수정</button>
                         </div>
                     </div>
                 </div>

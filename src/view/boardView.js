@@ -1,32 +1,46 @@
-import '../css/common.css'
+import '../css/common.css';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
 import parse from 'html-react-parser';
 import axios from 'axios';
 
 function BoardView() {
+    // URL에서 boardIdx를 가져오기 위해 useParams 훅 사용
     const { boardIdx } = useParams();
+
+    // 상태 변수 정의
     const [boardViewData, setBoardViewData] = useState({});
     const [isOpen, setIsOpen] = useState(false);
     const [modalAction, setModalAction] = useState('');
+    const [fileNames, setFileNames] = useState([]);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        getBoardIdx();
-    }, [boardIdx]);
-
+    const [comment, setComment] = useState('');
+    const [commentLists, setCommentLists] = useState([]);
+    const [commentPwd, setCommentPwd] = useState('');
+    const [selectedCommentIdx, setSelectedCommentIdx] = useState(null);
     const [passWord, setPassWord] = useState('');
 
-    const openModal = (action) => {
+    // 컴포넌트가 마운트되거나 boardIdx가 변경될 때 실행되는 useEffect
+    useEffect(() => {
+        getBoardIdx(); // 게시글 정보 가져오기
+        getFileName(); // 첨부 파일 이름 가져오기
+        getComments(); // 댓글 목록 가져오기
+    }, [boardIdx]);
+
+    // 모달 열기
+    const openModal = (action, commentIdx) => {
         setModalAction(action);
+        setSelectedCommentIdx(commentIdx);
         setIsOpen(true);
     }
 
+    // 모달 닫기
     const closeModal = () => {
         setIsOpen(false);
         setPassWord('');
     }
 
+    // 게시글 정보 가져오기
     const getBoardIdx = async () => {
         try {
             const response = await axios.get(`http://localhost:8081/getBoardIdx?idx=${boardIdx}`);
@@ -36,27 +50,120 @@ function BoardView() {
         }
     };
 
+    // 비밀번호 확인 후 작업 수행
     const passWordTest = async () => {
-        console.log(modalAction);
-
-
+        // 비밀번호 일치 여부 확인
         if (passWord !== boardViewData.pwd) {
             alert("비밀번호가 일치하지 않습니다.");
             setPassWord('');
             return;
         }
 
+        // 모달 액션에 따른 작업 수행
         if (modalAction === 'update') {
-            navigate(`/boardview/${boardIdx}/boardEdit`);
+            navigate(`/boardview/${boardIdx}/boardEdit`); // 게시글 수정 페이지로 이동
         } else if (modalAction === 'delete') {
             try {
                 const response = await axios.delete(`http://localhost:8081/deleteBoard?idx=${boardIdx}`);
                 if (response.data.result === "DELETE_COMPLETE") {
-                    navigate('/');
+                    navigate('/'); // 홈으로 이동
                 }
             } catch (e) {
                 console.log(e);
             }
+        } else if (modalAction === 'deleteComment') {
+            deleteComment(selectedCommentIdx); // 선택된 댓글 삭제
+        } else if (modalAction === 'updateComment') {
+            // 댓글 수정 기능 추가할 수 있음
+        }
+    };
+
+    // 첨부 파일 이름 가져오기
+    const getFileName = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8081/getFileNames?boardIdx=${boardIdx}`);
+            setFileNames(response.data);
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    // 댓글 추가
+    const addComment = async () => {
+        try {
+            if (comment === "") {
+                alert("비어있는 입력란이 있습니다.");
+                return;
+            }
+
+            const response = await axios.post('http://localhost:8081/addComment', {
+                boardIdx: boardIdx,
+                comment: comment,
+                pwd: commentPwd
+            });
+
+            if (response.data.result === "ADD_COMMENT_COMPLETE") {
+                setComment("");
+                setCommentPwd("");
+                getComments(); // 댓글 목록 갱신
+            }
+
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    // 댓글 목록 가져오기
+    const getComments = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8081/getCommentByBoardIdx?boardIdx=${boardIdx}`);
+            setCommentLists(response.data);
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    // 댓글 삭제
+    const deleteComment = async (commentIdx) => {
+        // 비밀번호 일치 여부 확인
+        if (passWord !== commentLists.pwd) {
+            alert("비밀번호가 일치하지 않습니다.");
+            setPassWord('');
+            return;
+        }
+
+        try {
+            const response = await axios.delete(`http://localhost:8081/deleteCommentByIdx?idx=${commentIdx}`);
+            if (response.data.result === "DELETE_COMMENT_COMPLETE") {
+                getComments(); // 댓글 목록 갱신
+                closeModal(); // 모달 닫기
+            }
+        } catch (e) {
+            console.log(e);
+        }
+    };
+
+    // 이미지 다운로드
+    const downloadImage = async (item) => {
+        const apiUrl = "http://localhost:8081/image/download?fileName=" + item;
+
+        try {
+            const response = await axios.get(apiUrl, {
+                responseType: 'blob'
+            });
+
+            const blob = new Blob([response.data], { type: "application/octet-stream" });
+            const url = window.URL.createObjectURL(blob);
+
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.setAttribute('download', item.split("=")[1]);
+
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        } catch (e) {
+            console.log(e);
         }
     };
 
@@ -92,42 +199,44 @@ function BoardView() {
                         </div>
 
                         <div className="view_file">
-                            <strong className="tit_file"><span className="ico_img file">첨부파일</span> 첨부파일</strong>
-                            <ul className="list_file">
-                                <li><a href="#">file_20240425.zip</a></li>
-                            </ul>
+                            <strong className="tit_file"><span className="ico_img file">첨부파일</span>첨부파일 :</strong>
+                            {fileNames.map((fileName, index) => (
+                                <a onClick={() => { downloadImage(fileName) }}>{fileName.split("=")[1]}</a>
+                            ))}
                         </div>
                     </div>
 
                     <div className="wrap_reply">
                         <div className="reply_tit">
-                            <strong className="tit">댓글(2)</strong>
+                            <strong className="tit">댓글({commentLists.length})</strong>
                         </div>
                         <div className="reply_cont">
                             <ul className="list_reply">
-                                <li>
-                                    <div className="info">
-                                        <strong>사용자</strong> <span className="fc_g ml_5">2024-04-19 16:42</span>
-                                        <span className="ml_10">
-                                            <button className="comm_btn_small">삭제</button>
-                                            <button className="comm_btn_small">수정</button>
-                                        </span>
-                                    </div>
-                                    <div className="cont">
-                                        사용자는 사용연한 이전에 전자기기 사용에 문제가 있을 경우 수리 요청 기안 작성(문제 사유를 상세히 작성)
-                                    </div>
-                                </li>
+                                {commentLists.map((comment) => (
+                                    <li key={comment.idx}>
+                                        <div className="info">
+                                            <strong>{comment.writerId}</strong> <span className="fc_g ml_5">{comment.createAt}</span>
+                                            <span className="ml_10">
+                                                <button className="comm_btn_small" onClick={() => openModal('deleteComment', comment.idx)}>삭제</button>
+                                                <button className="comm_btn_small" onClick={() => openModal('updateComment', comment.idx)}>수정</button>
+                                            </span>
+                                        </div>
+                                        <div className="cont">
+                                            {comment.comment}
+                                        </div>
+                                    </li>
+                                ))}
                             </ul>
                         </div>
                         <form>
                             <fieldset className="blind">댓글작성</fieldset>
                             <div className="reply_write">
                                 <div className="wr_cont">
-                                    <textarea className="comm_textarea"></textarea>
+                                    <textarea className="comm_textarea" onChange={(e) => setComment(e.target.value)} value={comment}></textarea>
                                 </div>
                                 <div className="wr_btn">
-                                    비밀번호 <input type="text" className="comm_inp_text" />
-                                    <button className="comm_btn_round fill">등록</button>
+                                    비밀번호 <input type="text" className="comm_inp_text" onChange={(e) => setCommentPwd(e.target.value)} value={commentPwd} />
+                                    <button type="button" className="comm_btn_round fill" onClick={addComment}>등록</button>
                                 </div>
                             </div>
                         </form>

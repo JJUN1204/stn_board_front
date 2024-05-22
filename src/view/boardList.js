@@ -11,7 +11,7 @@ function BoardList() {
         getBoardEmail();
     }, []);
 
-    
+
     const [idx, setIdx] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageNumber, setPageNumber] = useState([]);
@@ -55,7 +55,7 @@ function BoardList() {
     };
 
     const getBoardEmail = async () => {
-    
+
 
         try {
             const response = await axios.get(`http://localhost:8081/getEmail?idx=${idx}`);
@@ -67,7 +67,7 @@ function BoardList() {
 
     };
 
-    
+
 
 
     return (
@@ -133,7 +133,11 @@ function BoardList() {
                                         <span className="txt_reply">(2)</span>{" "}
                                         <span className="ico_new">N</span>{" "}
                                     </td>
-                                    <td> </td>
+                                    <td>
+                                        <a className="link_file" href="javascript:;">
+                                            <span className="ico_img flie">첨부파일</span>{item.file}
+                                        </a>
+                                    </td>
                                     <td>
                                         <button className="link_writer" onClick={openModal}>{item.writerId}</button>
                                     </td>
@@ -265,31 +269,31 @@ function BoardList() {
                                 <tr>
                                     <th>보내는 사람</th>
                                     <td>
-                                        <input type="text" className="comm_inp_text" style={{ width: "100%" }} onChange={null}/>
+                                        <input type="text" className="comm_inp_text" style={{ width: "100%" }} onChange={null} />
                                     </td>
                                 </tr>
-                                <tr>    
+                                <tr>
                                     <th>받는 사람</th>
                                     <td>
-                                        <input type="text" className="comm_inp_text" value={boardEmail} style={{ width: "100%" }} onChange={null}/>
+                                        <input type="text" className="comm_inp_text" value={boardEmail} style={{ width: "100%" }} onChange={null} />
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>제목</th>
                                     <td>
-                                        <input type="text" className="comm_inp_text" style={{ width: "100%" }} onChange={null}/>
+                                        <input type="text" className="comm_inp_text" style={{ width: "100%" }} onChange={null} />
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>내용</th>
                                     <td>
-                                        <textarea className="comm_textarea" style={{ width: "100%" }} onChange={null}/>
+                                        <textarea className="comm_textarea" style={{ width: "100%" }} onChange={null} />
                                     </td>
                                 </tr>
                                 <tr>
                                     <th>파일</th>
                                     <td>
-                                        <input type="file" className="comm_inp_file" style={{ width: "100%" }} onChange={null}/>
+                                        <input type="file" className="comm_inp_file" style={{ width: "100%" }} onChange={null} />
                                         <ul className="list_file_inline mt_5">
                                             <li>
                                                 file_20240425.zip <button className="btn_ico_del">삭제</button>

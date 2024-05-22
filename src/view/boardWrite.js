@@ -9,6 +9,7 @@ import * as DOMPurify from "dompurify";
 
 function BoardWrite() {
     
+    // 게시글의 제목, 작성자, 비밀번호, 이메일, 비밀글 여부, 공지사항 여부, 내용, 첨부 파일에 대한 상태 변수를 선언합니다.
     const [title, setTitle] = useState('');
     const [writerId, setWriterId] = useState('');
     const [pwd, setPwd] = useState('');
@@ -17,45 +18,39 @@ function BoardWrite() {
     const [isAlert, setIsAlert] = useState(0);
     const [content, setContent] = useState('');
     const [files, setFiles] = useState([]);
-    
 
-    const navigate = useNavigate();
+    const navigate = useNavigate(); // React Router의 navigate hook을 사용하여 페이지 이동을 관리합니다.
 
-    const handleQuillChange = (content) => {
-        // HTML을 제거하고 순수한 텍스트만을 추출
-        const textContent = DOMPurify.sanitize(content);
-        console.log(textContent);
-        setContent(textContent);
-    };
-
+    // 게시글 등록을 처리하는 함수입니다.
     const handleUpadte = async () => {
-
-
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('writerId', writerId);
+        formData.append('pwd', pwd);
+        formData.append('email', email);
+        formData.append('isPrivate', isPrivate);
+        formData.append('isAlert', isAlert);
+        formData.append('content', content);
+        files.forEach((file, index) => {
+            formData.append('files', file);
+        });
+    
         try {
+            const response = await axios.post('http://localhost:8081/insertBoard', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
     
-          const response = await axios.put('http://localhost:8081/insertBoard',
-            {
-                title: title,
-                writerId: writerId,
-                pwd: pwd,
-                email: email,
-                isPrivate: isPrivate,
-                isAlert: isAlert,
-                content: content,
+            if (response.data.result === "UPDATE_COMPLETE") {
+                navigate('/'); // 등록이 완료되면 홈 페이지로 이동합니다.
             }
-          );
-    
-          if (response.data.result === "UPDATE_COMPLETE") {
-            navigate('/');
-          }
         } catch (e) {
-          console.log(e);
+            console.log(e);
         }
+    };
     
-      };
-    
-
-    //quill Editor 라이브러리 사용
+    // Quill Editor의 모듈 및 포맷을 설정합니다.
     const modules = {
         toolbar: [
             [{ header: [1, 2, false] }],
@@ -89,36 +84,28 @@ function BoardWrite() {
         "background",
     ];
 
-    //파일 기능
-
-    // 1.파일 선택 시
+    // 파일 선택 시 실행되는 함수입니다.
     const handleChangeFile = (event) => {
-        const fileList = Array.from(event.target.files); //file 값을 배열로 변환
-        setFiles([...files, ...fileList]); //files와 filesLst를 합쳐줌
+        const fileList = Array.from(event.target.files); // 파일 값을 배열로 변환합니다.
+        setFiles([...files, ...fileList]); // 기존 파일 배열과 새로운 파일 배열을 합칩니다.
+        console.log(fileList);
     };
 
-    // 2.파일 삭제 시
+    // 파일 삭제 시 실행되는 함수입니다.
     const handleDeleteFile = (index) => {
         const newFiles = [...files];
         newFiles.splice(index, 1);
         setFiles(newFiles);
     };
 
+    // 공지사항 체크박스 변경 시 실행되는 함수입니다.
     const handleAlertChange = () => {
-        if(isAlert === 1){
-            setIsAlert(0);
-        }else{
-            setIsAlert(1);
-        }   
-        
+        setIsAlert(prevState => prevState === 1 ? 0 : 1);
     };
 
+    // 비밀글 체크박스 변경 시 실행되는 함수입니다.
     const handlePrivateChange = () => {
-        if(isPrivate === 1){
-            setIsPrivate(0);
-        }else{
-            setIsPrivate(1);
-        }   
+        setIsPrivate(prevState => prevState === 1 ? 0 : 1);
     };
 
     return (
@@ -147,23 +134,20 @@ function BoardWrite() {
                             </dl>
 
                             <dl className="side">
-                                {
-                                    isPrivate === 0 &&
-                                    <>
-                                        <dt>공지사항</dt>
-                                        <dd><label className="comm_swich"><input type="checkbox" name='isAlert' value={isAlert} checked={isAlert === 1} onChange={handleAlertChange} /><span className="ico_txt"></span></label></dd>
-                                    </>
-                                }
-                                {
-                                    isPrivate === 1&&
-                                    <>
-                                        <dt>공지사항</dt>
-                                        <dd><label className="comm_swich"><input type="checkbox" name='isAlert' value={isAlert} checked={isAlert === 1} onChange={handleAlertChange} disabled/><span className="ico_txt"></span></label></dd>
-                                    </>
-                                }
-                                
+                                <dt>공지사항</dt>
+                                <dd>
+                                    <label className="comm_swich">
+                                        <input type="checkbox" name='isAlert' checked={isAlert === 1} onChange={handleAlertChange} disabled={isPrivate === 1} />
+                                        <span className="ico_txt"></span>
+                                    </label>
+                                </dd>
                                 <dt>비밀글</dt>
-                                <dd><label className="comm_swich"><input type="checkbox" name='isPrivate' value={isPrivate} checked={isPrivate ===1} onChange={handlePrivateChange}/><span className="ico_txt"></span></label></dd>
+                                <dd>
+                                    <label className="comm_swich">
+                                        <input type="checkbox" name='isPrivate' checked={isPrivate === 1} onChange={handlePrivateChange} disabled={isAlert === 1}/>
+                                        <span className="ico_txt"></span>
+                                    </label>
+                                </dd>
                             </dl>
                         </div>
                         <div className="write_cont">

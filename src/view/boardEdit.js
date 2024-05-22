@@ -5,7 +5,7 @@ import axios from 'axios';
 import ReactQuill from "react-quill";
 
 function BoardEdit() {
-    const [input, setInput] = useState({
+    const [input, setInput] = useState({ // 입력 상태를 관리하는 useState 훅입니다.
         idx: '',
         title: '',
         writerId: '',
@@ -17,9 +17,10 @@ function BoardEdit() {
         createAt: ''
     });
 
-    const navigate = useNavigate();
-    const { boardIdx } = useParams();
+    const navigate = useNavigate(); // React Router의 navigate hook을 사용하여 페이지 이동을 관리합니다.
+    const { boardIdx } = useParams(); // URL의 매개변수를 가져오기 위해 useParams hook을 사용합니다.
 
+    // ReactQuill의 모듈 및 포맷을 설정합니다.
     const modules = {
         toolbar: [
             [{ header: [1, 2, false] }],
@@ -54,13 +55,14 @@ function BoardEdit() {
     ];
 
     useEffect(() => {
-        fetchData();
-    }, [boardIdx]); // boardIdx의 값이 변경될 때마다 새로운 데이터 받아오기
+        fetchData(); // 페이지가 로드될 때 데이터를 가져오는 fetchData 함수를 호출합니다.
+    }, [boardIdx]); // boardIdx의 값이 변경될 때마다 fetchData 함수를 호출합니다.
 
+    // 게시글 데이터를 가져오는 함수입니다.
     const fetchData = async () => {
         try {
             const response = await axios.get(`http://localhost:8081/getBoardIdx?idx=${boardIdx}`);
-            setInput({
+            setInput({ // 가져온 데이터를 input 상태로 설정합니다.
                 idx: response.data.idx,
                 title: response.data.title,
                 writerId: response.data.writerId,
@@ -76,6 +78,7 @@ function BoardEdit() {
         }
     };
 
+    // 공지사항 체크박스 변경 시 호출되는 함수입니다.
     const handleAlertChange = () => {
         setInput(prevState => ({
             ...prevState,
@@ -84,7 +87,7 @@ function BoardEdit() {
         }));
     };
     
-
+    // 비밀글 체크박스 변경 시 호출되는 함수입니다.
     const handlePrivateChange = () => {
         setInput(prevState => ({
             ...prevState,
@@ -93,12 +96,12 @@ function BoardEdit() {
         }));
     };
     
-
+    // 게시글 수정을 처리하는 함수입니다.
     const boardUpdate = async () => {
         try {
             const response = await axios.put(`http://localhost:8081/updateBoard`, input);
             if (response.data.result === "UPDATE_COMPLETE") {
-                navigate(`/boardview/${boardIdx}`);
+                navigate(`/boardview/${boardIdx}`); // 수정이 완료되면 해당 게시글로 이동합니다.
             }
         } catch (e) {
             console.log(e);
